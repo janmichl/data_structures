@@ -14,7 +14,8 @@ class LinkedList {
                       << std::endl;
         }
 
-        tvalue getValue() const { return value_; }
+        const tvalue& getValue() const { return value_; }
+        tvalue& getValue() { return value_; }
         std::unique_ptr<LinkedListNode>& getNext() { return next_; }
 
        private:
@@ -60,7 +61,7 @@ class LinkedList {
         }
     }
 
-    void addNodeAtPosition(std::size_t position, tvalue value) {
+    void addNodeAtPosition(const std::size_t position, tvalue value) {
         const std::size_t number_of_nodes = getNumberOfNodes();
         if (position > number_of_nodes) {
             std::cout << "Not enough nodes in the list. There are "
@@ -90,6 +91,20 @@ class LinkedList {
         }
     }
 
+    const tvalue& operator[](std::size_t index) const {
+        Node* node = goToNode(index);
+        if (node) {
+            return node->getValue();
+        }
+    }
+
+    tvalue& operator[](std::size_t index) {
+        Node* node = goToNode(index);
+        if (node) {
+            return node->getValue();
+        }
+    }
+
     void prependNode(tvalue value) { addNodeAtPosition(0, value); }
 
    private:
@@ -97,6 +112,19 @@ class LinkedList {
         std::unique_ptr<Node> old_root = std::move(root_);
         root_ = std::make_unique<Node>(value);
         root_->getNext() = std::move(old_root);
+    }
+
+    Node* goToNode(const std::size_t index) {
+        if (index < getNumberOfNodes()) {
+            std::size_t current_index = 0;
+            Node* node = root_.get();
+            while (current_index != index) {
+                ++current_index;
+                node = node->getNext().get();
+            }
+            return node;
+        }
+        return nullptr;
     }
 
     std::unique_ptr<Node> root_;
@@ -114,6 +142,8 @@ int main(int argc, char** argv) {
     ll.addNodeAtPosition(20, 80);
     ll.prependNode(500);
     ll.showNodes();
+    const int value_at_node_3 = ll[3];
+    std::cout << "Value at node 3 " << value_at_node_3 << std::endl;
 
     return 0;
 }
