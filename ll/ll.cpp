@@ -1,4 +1,5 @@
 #include <cstddef>
+#include <exception>
 #include <iostream>
 #include <memory>
 
@@ -34,7 +35,7 @@ class LinkedList {
         return number_of_nodes;
     }
 
-    void appendNode(tvalue value) {
+    void appendNode(const tvalue& value) {
         if (!root_) {
             root_ = std::make_unique<Node>(value);
             return;
@@ -50,7 +51,7 @@ class LinkedList {
         }
     }
 
-    void showNodes() const {
+    void showAllNodes() const {
         std::size_t node_index = 0;
         Node* node = root_.get();
         while (node) {
@@ -61,7 +62,7 @@ class LinkedList {
         }
     }
 
-    void addNodeAtPosition(const std::size_t position, tvalue value) {
+    void addNodeAtPosition(const std::size_t position, const tvalue& value) {
         const std::size_t number_of_nodes = getNumberOfNodes();
         if (position > number_of_nodes) {
             std::cout << "Not enough nodes in the list. There are "
@@ -91,24 +92,26 @@ class LinkedList {
         }
     }
 
-    const tvalue& operator[](std::size_t index) const {
+    const tvalue& operator[](const std::size_t index) const {
         Node* node = goToNode(index);
-        if (node) {
-            return node->getValue();
+        if (!node) {
+            throw std::runtime_error("Index out of bounds.");
         }
+        return node->getValue();
     }
 
-    tvalue& operator[](std::size_t index) {
+    tvalue& operator[](const std::size_t index) {
         Node* node = goToNode(index);
-        if (node) {
-            return node->getValue();
+        if (!node) {
+            throw std::runtime_error("Index out of bounds.");
         }
+        return node->getValue();
     }
 
-    void prependNode(tvalue value) { addNodeAtPosition(0, value); }
+    void prependNode(const tvalue& value) { addNodeAtPosition(0, value); }
 
    private:
-    void prependToRoot(tvalue value) {
+    void prependToRoot(const tvalue& value) {
         std::unique_ptr<Node> old_root = std::move(root_);
         root_ = std::make_unique<Node>(value);
         root_->getNext() = std::move(old_root);
@@ -132,18 +135,30 @@ class LinkedList {
 
 int main(int argc, char** argv) {
     LinkedList<int> ll;
+    std::cout << "Appending nodes with values 6, 9, 78, 43" << std::endl;
     ll.appendNode(6);
     ll.appendNode(9);
     ll.appendNode(78);
     ll.appendNode(43);
+    std::cout << "Adding node with value 200 at position 3" << std::endl;
     ll.addNodeAtPosition(3, 200);
-    ll.showNodes();
+    std::cout << "Showing all nodes" << std::endl;
+    ll.showAllNodes();
+    std::cout << "Adding node with value 23 at position 2" << std::endl;
     ll.addNodeAtPosition(2, 23);
+    std::cout << "Adding node with value 80 at position 20" << std::endl;
     ll.addNodeAtPosition(20, 80);
+    std::cout << "Prepending node with value 500 to root" << std::endl;
     ll.prependNode(500);
-    ll.showNodes();
-    const int value_at_node_3 = ll[3];
-    std::cout << "Value at node 3 " << value_at_node_3 << std::endl;
+    std::cout << "Showing all nodes" << std::endl;
+    ll.showAllNodes();
+    int value_at_node_3 = ll[3];
+    std::cout << "Retrieving value at node 3 " << value_at_node_3 << std::endl;
+    std::cout << "Assigning value 123 at node 3" << std::endl;
+    ll[3] = 123;
+    value_at_node_3 = ll[3];
+    std::cout << "Showing all nodes" << std::endl;
+    ll.showAllNodes();
 
     return 0;
 }
